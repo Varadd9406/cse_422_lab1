@@ -22,8 +22,8 @@ static struct hrtimer my_hrtimer;
 static ktime_t interval;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
-    ktime_t now = ktime_get();
     hrtimer_forward_now(&my_hrtimer,interval);
+        printk("Hey there again")
 	return HRTIMER_RESTART;
 }
 
