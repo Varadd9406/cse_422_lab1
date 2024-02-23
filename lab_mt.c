@@ -20,19 +20,24 @@ module_param(log_nsec, ulong, 0444);
 
 static struct hrtimer my_hrtimer;
 static ktime_t interval;
-static struct task_struct *thread;
+static struct task_struct* threads[4];
 static int iteration = 0;
 
-static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
+static enum hrtimer_restart timer_callback(struct hrtimer *timer)
+{
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
-    wake_up_process(thread);
+    for(int i =0;i<4;i++)
+    {
+        wake_up_process(threads[i]);
+    }
 	return HRTIMER_RESTART;
 }
 
 
 static int thread_function(void *data) {
-     while (!kthread_should_stop()) {
+     while (!kthread_should_stop())
+     {
         iteration++;
 
         printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n",
@@ -43,7 +48,6 @@ static int thread_function(void *data) {
     }
 
     return 0;
-
 }
 
 static int __init ModuleInit(void) {
@@ -55,12 +59,17 @@ static int __init ModuleInit(void) {
     my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
-    thread = kthread_run(thread_function, NULL, "monitoring_thread");
+    for(int i = 0;i<4;i++)
+    {
+        threads[i] = kthread_create(thread_function, NULL, "thread");
+        kthread_bind(threads[i],i);
+    }
 
 	return 0;
 }
 
-static void __exit ModuleExit(void) {
+static void __exit ModuleExit(void)
+{
 	hrtimer_cancel(&my_hrtimer);
 	printk("Goodbye, Kernel\n");
 }
