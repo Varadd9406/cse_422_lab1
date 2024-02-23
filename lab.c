@@ -21,6 +21,7 @@ module_param(log_nsec, ulong, 0444);
 static struct hrtimer my_hrtimer;
 static ktime_t interval;
 static struct task_struct *thread;
+static interation = 0;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
     hrtimer_forward_now(&my_hrtimer,interval);
