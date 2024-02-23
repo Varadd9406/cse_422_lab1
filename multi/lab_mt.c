@@ -43,8 +43,8 @@ static int thread_function(void *data) {
      {
         iteration++;
 
-        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n CPU - %s",
-               iteration, current->nvcsw, current->nivcsw,smp_processor_id());
+        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n CPU - %d",
+               iteration, current->nvcsw, current->nivcsw, smp_processor_id());
 
         set_current_state(TASK_INTERRUPTIBLE);
         schedule();
