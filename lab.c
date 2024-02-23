@@ -1,31 +1,40 @@
 #include <linux/module.h>
+#include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/hrtimer.h>
-#include <linux/jiffies.h>
+#include <linux/ktime.h>
+#include <linux/kthread.h>
 
 
 /* Meta Information */
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Johannes 4 GNU/Linux");
-MODULE_DESCRIPTION("A simple LKM using High Resulution Timers");
+MODULE_AUTHOR("Varad and Peter");
+MODULE_DESCRIPTION("Lab 1");
 
 /* hr timer */
-static struct hrtimer  my_hrtimer;
-u64 start_t;
+static unsigned long log_sec;
+static unsigned long log_nsec; 
 
-static enum hrtimer_restart test_hrtimer_handler(struct hrtimer *timer) {
-	u64 now_t = jiffies;
-	printk("start_t - now_t = %u\n", jiffies_to_msecs(now_t - start_t));
-	return HRTIMER_NORESTART;
+module_param(log_sec, ulong, 0444);
+module_param(log_nsec, ulong, 0444);
+
+static struct hrtimer my_hrtimer;
+static ktime_t interval;
+
+static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
+    ktime_t now = ktime_get();
+    hrtimer_forward_now(&my_hrtimer,interval);
+	return HRTIMER_RESTART;
 }
 
 static int __init ModuleInit(void) {
-	printk("Hello, Kernel!\n");
+	printk("hrtime Module Loaded!\n");
 
-	hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	my_hrtimer.function = &test_hrtimer_handler;
-	start_t = jiffies;
-	hrtimer_start(&my_hrtimer, ms_to_ktime(100), HRTIMER_MODE_REL);
+    interval = ktime_set(log_sec, log_nsec);
+
+    hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+    hr_timer.function = &timer_callback;
+    hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 	return 0;
 }
 
