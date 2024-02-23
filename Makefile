@@ -1,1 +1,1 @@
-obj-m := module.o
+obj-m += lab.o
