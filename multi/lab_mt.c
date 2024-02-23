@@ -28,7 +28,7 @@ static enum hrtimer_restart timer_callback(struct hrtimer *timer)
     int i = 0;
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
-    
+
     while(i<4)
     {
         wake_up_process(threads[i]);
@@ -43,8 +43,8 @@ static int thread_function(void *data) {
      {
         iteration++;
 
-        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n",
-               iteration, current->nvcsw, current->nivcsw);
+        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n CPU - %s",
+               iteration, current->nvcsw, current->nivcsw,smp_processor_id());
 
         set_current_state(TASK_INTERRUPTIBLE);
         schedule();
