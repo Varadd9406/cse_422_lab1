@@ -33,7 +33,7 @@ static int __init ModuleInit(void) {
     interval = ktime_set(log_sec, log_nsec);
 
     hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-    hr_timer.function = &timer_callback;
+    my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 	return 0;
 }
