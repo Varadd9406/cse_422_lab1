@@ -25,9 +25,10 @@ static int iteration = 0;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer)
 {
+    int i = 0;
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
-    int i  = 0;
+    
     while(i<4)
     {
         wake_up_process(threads[i]);
@@ -53,6 +54,8 @@ static int thread_function(void *data) {
 }
 
 static int __init ModuleInit(void) {
+    int i = 0;
+
 	printk("hrtime Module Loaded!\n");
 
     interval = ktime_set(log_sec, log_nsec);
@@ -60,8 +63,7 @@ static int __init ModuleInit(void) {
     hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
-    
-    int i = 0;
+
     while(i<4)
     {
         threads[i] = kthread_create(thread_function, NULL, "thread");
