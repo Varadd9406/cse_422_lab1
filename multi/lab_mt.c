@@ -27,9 +27,11 @@ static enum hrtimer_restart timer_callback(struct hrtimer *timer)
 {
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
-    for(int i =0;i<4;i++)
+    int i  = 0;
+    while(i<4)
     {
         wake_up_process(threads[i]);
+        i+=1;
     }
 	return HRTIMER_RESTART;
 }
@@ -58,11 +60,13 @@ static int __init ModuleInit(void) {
     hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
-
-    for(int i = 0;i<4;i++)
+    
+    int i = 0;
+    while(i<4)
     {
         threads[i] = kthread_create(thread_function, NULL, "thread");
         kthread_bind(threads[i],i);
+        i+=1;
     }
 
 	return 0;
