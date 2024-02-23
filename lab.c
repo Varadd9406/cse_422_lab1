@@ -20,11 +20,20 @@ module_param(log_nsec, ulong, 0444);
 
 static struct hrtimer my_hrtimer;
 static ktime_t interval;
+static struct task_struct *thread;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
 	return HRTIMER_RESTART;
+}
+
+
+static int thread_function(void *data) {
+    printk(KERN_INFO "Kernel Thread Woken Up\n");
+
+    return 0;
+
 }
 
 static int __init ModuleInit(void) {
@@ -35,6 +44,9 @@ static int __init ModuleInit(void) {
     hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
+
+    thread = kthread_run(thread_function, NULL, "monitoring_thread");
+
 	return 0;
 }
 
