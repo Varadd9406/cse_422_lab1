@@ -25,12 +25,25 @@ static struct task_struct *thread;
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
     hrtimer_forward_now(&my_hrtimer,interval);
     printk("Hey there again");
+    wake_up_process(thread);
 	return HRTIMER_RESTART;
 }
 
 
 static int thread_function(void *data) {
-    printk(KERN_INFO "Kernel Thread Woken Up\n");
+     while (!kthread_should_stop()) {
+        iteration++;
+
+        // Log message indicating a new iteration and the context switch counts
+        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n",
+               iteration, current->nvcsw, current->nivcsw);
+
+        // Set the current state to interruptible sleep, then schedule a switch
+        set_current_state(TASK_INTERRUPTIBLE);
+        schedule(); // Suspend execution until woken up
+
+        // The loop continues unless kthread_should_stop() returns true
+    }
 
     return 0;
 
