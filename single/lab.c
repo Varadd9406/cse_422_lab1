@@ -25,7 +25,7 @@ static int iteration = 0;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
     hrtimer_forward_now(&my_hrtimer,interval);
-    printk("Log - timer callback");
+    printk("Log - timer callback function");
     wake_up_process(thread);
 	return HRTIMER_RESTART;
 }
@@ -53,15 +53,21 @@ static int __init ModuleInit(void) {
 
     hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     my_hrtimer.function = &timer_callback;
-    hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
     thread = kthread_run(thread_function, NULL, "monitoring_thread");
+    
+    hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
+
 
 	return 0;
 }
 
 static void __exit ModuleExit(void) {
 	hrtimer_cancel(&my_hrtimer);
+    if (!kthread_should_stop(my_thread)) 
+    {
+        kthread_stop(thread);
+    }
 	printk("Goodbye, Kernel\n");
 }
 
