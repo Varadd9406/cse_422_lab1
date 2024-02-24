@@ -73,6 +73,11 @@ static int __init ModuleInit(void) {
     my_hrtimer.function = &timer_callback;
     hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
+    while(i<4)
+    {
+        wake_up_process(threads[i]);
+    }
+
 	return 0;
 }
 
@@ -83,7 +88,7 @@ static void __exit ModuleExit(void)
     int i = 0;
     while(i<4)
     {
-        if (!kthread_should_stop(my_thread)) 
+        if (!kthread_should_stop()) 
         {
             kthread_stop(threads[i]);
         }
