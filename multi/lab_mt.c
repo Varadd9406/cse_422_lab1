@@ -86,7 +86,7 @@ static int __init ModuleInit(void) {
 static void __exit ModuleExit(void)
 {
     int ret;
-    
+    int i = 0;
     ret = hrtimer_cancel(&my_hrtimer);
     if (ret) {
         printk(KERN_INFO "The timer was still in use...\n");
@@ -95,6 +95,9 @@ static void __exit ModuleExit(void)
 	while(i<4)
 	{
 		kthread_stop(threads[i]);
+		printk(KERN_INFO "Stopped thread %d",i);
+
+		i+=1;
 	}
 	printk("Goodbye, Kernel\n");
 }
