@@ -61,7 +61,6 @@ static int __init ModuleInit(void) {
     	printk(KERN_ERR "Failed to create thread");
 		return 0;
 	}
-}
 	
 	hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
