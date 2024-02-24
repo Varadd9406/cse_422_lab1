@@ -1,6 +1,12 @@
 Varad Deouskar - varad@wustl.edu
 Peter Rong - l.rong@wustl.edu
 
+To compile go to either single or multi and run command (same steps as studio 4)
+LINUX_SOURCE=path to your Linux kernel source code
+make -C $LINUX_SOURCE ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$PWD modules
+
+
+
 # Module Design
 
 Inside the single/lab.c file, we declared two global static unsigned long variables (log_sec, log_nsec). 
