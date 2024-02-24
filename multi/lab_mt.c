@@ -25,74 +25,71 @@ static int iteration = 0;
 
 static enum hrtimer_restart timer_callback(struct hrtimer *timer)
 {
-    int i = 0;
-    hrtimer_forward_now(&my_hrtimer,interval);
-    printk("Log - timer callback function");
+	int i = 0;
+	hrtimer_forward_now(&my_hrtimer,interval);
+	printk("Log - timer callback function");
 
-    while(i<4)
-    {
-        wake_up_process(threads[i]);
-        i+=1;
-    }
+	while(i<4)
+	{
+		wake_up_process(threads[i]);
+		i+=1;
+	}
 	return HRTIMER_RESTART;
 }
 
 
 static int thread_function(void *data) {
-     while (!kthread_should_stop())
-     {
-        iteration++;
+	 while (!kthread_should_stop())
+	 {
+		iteration++;
 
-        printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n CPU - %d",
-               iteration, current->nvcsw, current->nivcsw, smp_processor_id());
+		printk(KERN_INFO "Iteration %d: Thread Woken Up, Voluntary CS: %lu, Involuntary CS: %lu\n CPU - %d",
+			   iteration, current->nvcsw, current->nivcsw, smp_processor_id());
 
-        set_current_state(TASK_INTERRUPTIBLE);
-        schedule();
-    }
+		set_current_state(TASK_INTERRUPTIBLE);
+		schedule();
+	}
 
-    return 0;
+	return 0;
 }
 
 static int __init ModuleInit(void) {
-    int i = 0;
+	int i = 0;
 
 	printk("hrtime Module Loaded!\n");
 
-    interval = ktime_set(log_sec, log_nsec);
+	interval = ktime_set(log_sec, log_nsec);
 
-    hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_init(&my_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 
-    while(i<4)
-    {
-        threads[i] = kthread_create(thread_function, NULL, "thread");
-        kthread_bind(threads[i],i);
-        i+=1;
-    }
+	while(i<4)
+	{
+		threads[i] = kthread_create(thread_function, NULL, "thread");
+		kthread_bind(threads[i],i);
+		i+=1;
+	}
 
-    my_hrtimer.function = &timer_callback;
-    hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
+	my_hrtimer.function = &timer_callback;
+	hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
-    while(i<4)
-    {
-        wake_up_process(threads[i]);
-    }
+	while(i<4)
+	{
+		wake_up_process(threads[i]);
+	}
 
 	return 0;
 }
 
 static void __exit ModuleExit(void)
 {
+	int i = 0;
 	hrtimer_cancel(&my_hrtimer);
 
-    int i = 0;
-    while(i<4)
-    {
-        if (!kthread_should_stop()) 
-        {
-            kthread_stop(threads[i]);
-        }
-    }
+	while(i<4)
+	{
+		kthread_stop(threads[i]);
+	}
 	printk("Goodbye, Kernel\n");
 }
 
