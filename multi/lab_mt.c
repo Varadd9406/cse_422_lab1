@@ -68,6 +68,15 @@ static int __init ModuleInit(void) {
 	while(i<4)
 	{
 		threads[i] = kthread_create(thread_function, NULL, "thread");
+		threads[i] = kthread_run(thread_function, NULL, "thread_name");
+		if (IS_ERR(threads[i]))
+		{
+			printk(KERN_ERR "Failed to create thread %d\n", i);
+			while (--i >= 0)
+			{
+        		kthread_stop(threads[i]);
+    		}	
+		}
 		kthread_bind(threads[i],i);
 		i+=1;
 	}

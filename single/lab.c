@@ -56,6 +56,11 @@ static int __init ModuleInit(void) {
 	my_hrtimer.function = &timer_callback;
 
 	thread = kthread_run(thread_function, NULL, "monitoring_thread");
+	if (IS_ERR(threads[i])) 
+	{
+    	printk(KERN_ERR "Failed to create thread");
+	}
+}
 	
 	hrtimer_start(&my_hrtimer, interval, HRTIMER_MODE_REL);
 
