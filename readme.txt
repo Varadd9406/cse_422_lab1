@@ -27,7 +27,8 @@ As we can see, there's log of thread waking up approximately every 0.1 seconds, 
 
 # Thread Design and Evaluation
 
-Inside the thread function, we have a printk call that logs the iteration, voluntary and involuntary cs. Right after that, we have ```set_current_state(TASK_INTERRUPTIBLE)``` and calls ```schedule()```. We have a while loop wrapped around these to check if there's ```kthread_should_stop``` flag being true.
+Inside the thread function, we have a printk call that logs the iteration, voluntary and involuntary cs. Right after that, we have ```set_current_state(TASK_INTERRUPTIBLE)``` and calls ```schedule()```. We have a while loop wrapped around these to check if there's ```kthread_should_stop``` flag being true. 
+The race condition can be avoided by canceling the timer before stopping the thread, as hrtimer_cancel() will ensure that the timer callback function is not running if it returns 1, indicating that the timer was active. If it returns 0, the timer was not active, and there's no risk of entering the callback function thereafter.
 
 Part of system log for 1 second interval:
 ```
@@ -46,7 +47,7 @@ Feb 23 16:33:48 peterrpi kernel: [  154.808146] Iteration 8572: Thread Woken Up,
 ```
 
 1) The time interval varies approximately up to 0.001 seconds using 1 second intervals, and the time intervals varies approximately up to 0.000001 seconds using 1 millisecond intervals. Proportionately, the one with 1 second intervals varies more drastically. 
-2) TODO
+2) If a higher priority thread becomes runnable, the kernel may preempt the current thread to allow the higher priority one to run first, as we decrease the interval to 1ms, it becomes much more likely a thread might confict with another thread and the scheduler preempted involuntarily.
 
 # Multi-threading Design and Evaluation
 
@@ -129,5 +130,17 @@ Feb 23 17:41:00 peterrpi kernel: [ 4187.041488]  CPU - 0
 ```
 
 1) The difference in the actual timestamp is more close to the actual intended interval in the multithread case than the single thread case.
-2) 
-3) 
+2) If a higher priority thread becomes runnable, the kernel may preempt the current thread to allow the higher priority one to run first, as we decrease the interval to 1ms, it becomes much more likely a thread might confict with another thread and the scheduler preempted involuntarily. Since we are binding a the threads to specific core, as compared to a single thread, it is now more likely to get preempted involuntarily.
+3) The number of voluntary context switches increases with the decrease in the sampling interval. This is expected as the system is likely to perform more operations.
+    Involuntary Context Switches were absent in the longer intervals but became more prominent in shorter intervals (10 ms and 1 ms), suggesting that as the system's operational granularity increases, so does the scheduler's intervention to forcibly switch contexts, to maintain responsiveness.
+    In longer intervals, involuntary context switches are almost non-existent, indicating that threads voluntarily yield the CPU most of the time. However, as we move to finer intervals, involuntary context switches become more common, indicating an increase in scheduler activity to preemptively switch threads, possibly due to higher competition for CPU time.
+    In summary, the variation between voluntary and involuntary context switches becomes more pronounced as the observation interval decreases, indicating a competitive CPU scheduling environment.
+
+
+# System Performance
+1) total_exec min: 0.000015 max: 0.000019 mean: 0.000017
+2) jitter min: 0.000001 max: 0.000002 mean: 0.0000017
+3) single_thread_statistics min: 0.000014 max: 0.000018 mean: 0.0000165 
+
+# Development Effort
+This project took the team roughly 2 days work. 

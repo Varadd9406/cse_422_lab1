@@ -23,6 +23,7 @@ static ktime_t interval;
 static struct task_struct *thread;
 static int iteration = 0;
 
+/* timer callback*/
 static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
 	hrtimer_forward_now(&my_hrtimer,interval);
 	printk("Log - timer callback function");
@@ -30,7 +31,7 @@ static enum hrtimer_restart timer_callback(struct hrtimer *timer) {
 	return HRTIMER_RESTART;
 }
 
-
+/* function which each thread executes*/
 static int thread_function(void *data) {
 	 while (!kthread_should_stop()) {
 		iteration++;
@@ -63,8 +64,12 @@ static int __init ModuleInit(void) {
 }
 
 static void __exit ModuleExit(void) {
-	hrtimer_cancel(&my_hrtimer);
-
+    int ret;
+    
+    ret = hrtimer_cancel(&my_hrtimer);
+    if (ret) {
+        printk("The timer was still in use...\n");
+    }
 	kthread_stop(thread);
 	
 	printk("Goodbye, Kernel\n");
