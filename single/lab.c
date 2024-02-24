@@ -64,10 +64,9 @@ static int __init ModuleInit(void) {
 
 static void __exit ModuleExit(void) {
 	hrtimer_cancel(&my_hrtimer);
-    if (!kthread_should_stop(my_thread)) 
-    {
-        kthread_stop(thread);
-    }
+
+    kthread_stop(thread);
+    
 	printk("Goodbye, Kernel\n");
 }
 
