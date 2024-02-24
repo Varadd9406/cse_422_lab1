@@ -12,11 +12,11 @@ MODULE_AUTHOR("Varad and Peter");
 MODULE_DESCRIPTION("Lab 1");
 
 /* hr timer */
-static unsigned long log_sec;
-static unsigned long log_nsec; 
+static unsigned long log_sec = 1;
+static unsigned long log_nsec = 0; 
 
-module_param(log_sec, ulong, 0444);
-module_param(log_nsec, ulong, 0444);
+module_param(log_sec, ulong, 0);
+module_param(log_nsec, ulong, 0);
 
 static struct hrtimer my_hrtimer;
 static ktime_t interval;
@@ -27,7 +27,7 @@ static enum hrtimer_restart timer_callback(struct hrtimer *timer)
 {
     int i = 0;
     hrtimer_forward_now(&my_hrtimer,interval);
-    printk("Hey there again");
+    printk("Log - timer callback");
 
     while(i<4)
     {
