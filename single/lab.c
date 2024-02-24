@@ -59,6 +59,7 @@ static int __init ModuleInit(void) {
 	if (IS_ERR(threads[i])) 
 	{
     	printk(KERN_ERR "Failed to create thread");
+		return 0;
 	}
 }
 	

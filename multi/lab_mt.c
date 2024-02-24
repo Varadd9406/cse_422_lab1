@@ -75,7 +75,8 @@ static int __init ModuleInit(void) {
 			while (--i >= 0)
 			{
         		kthread_stop(threads[i]);
-    		}	
+    		}
+			return 0;
 		}
 		kthread_bind(threads[i],i);
 		i+=1;
